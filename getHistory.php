@@ -19,11 +19,15 @@ class GetHistory
         $index =0;
         $index_hours =0;
         $now = intval(date("d"));
-        $total_depart = 0;
-        $total_arrivées = 0;
+        $totalDepart = 0;
+        $totalArrivées = 0;
         $dates = array();
         $informations = array();
         $information = array();
+        $totalFlightsHours = 0;
+        $hours =0;
+        $nbRetardedDepartures = 0;
+        $annulatedFlights = 0;
 
         $f =  explode('.', $flightHistory);
         foreach ($f as $date) {
@@ -35,6 +39,12 @@ class GetHistory
                 if(count($hours)==8){
                     foreach($hours as $h){
                         if($index_hours%2 == 0){
+                            if($hours[$index_hours] == "--:--" && $hours[$index_hours+1]== "--:--"){
+                                $annulatedFlights == $annulatedFlights +1;
+                            }
+                            if(intval($hours[$index_hours]) == 0){
+                                $hours[$index_hours] =24;
+                            }
                             $hour =  intval($hours[$index_hours]) *60 + intval($hours[$index_hours+1]);
                             array_push($information, $hour);
                         }
@@ -42,8 +52,17 @@ class GetHistory
                     }
                     $depart = $information[0]-$information[2];
                     $arrivé = $information[1]-$information[3];
-                    $total_depart = $total_depart + $depart;
-                    $total_arrivées = $total_arrivées + $arrivé;
+                    $totalDepart = $totalDepart + $depart;
+                    $totalArrivées = $totalArrivées + $arrivé;
+                    $hours = $information[3] - $information[2];
+                    var_dump($information);
+
+                    $totalFlightsHours = $totalFlightsHours + $hours;
+                    print($totalFlightsHours);
+
+                    if($depart < 0){
+                        $nbRetardedDepartures = $nbRetardedDepartures +1;
+                    }
                 }
                 
             }
@@ -52,7 +71,7 @@ class GetHistory
             $index = $index + 1;
         }
         
-        return array("arrivals" => $total_arrivées, "departures" =>$total_depart);
+        return array("arrivals" => $totalArrivées, "departures" =>$totalDepart, "totalFlightsMinutes" => $totalFlightsHours, "nbRetardedDepartures" => $nbRetardedDepartures, "annulatedFlights" => $annulatedFlights);
         
 
    }
